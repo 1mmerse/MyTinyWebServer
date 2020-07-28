@@ -12,9 +12,12 @@
 #include <string>
 #include <semaphore.h>
 #include <cassert>
+#include "../log/Log.h"
+#include "threadpool.h"
 
 class SqlConnPool {
 public:
+    //局部静态变量单例模式
     static SqlConnPool *Instance();
 
     MYSQL *GetConn();

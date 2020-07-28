@@ -12,7 +12,7 @@
 #include <cstdarg>
 #include <cassert>
 #include <sys/stat.h> //mkdir()
-#include <ctime> //gettimeofday()
+#include <sys/time.h> //gettimeofday()
 #include "BlockDeque.h"
 #include "../buffer/Buffer.h"
 
