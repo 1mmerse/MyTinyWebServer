@@ -43,6 +43,7 @@ void Buffer::RetrieveUntil(const char *end) {
     Retrieve(end - Peek());
 }
 
+//回收所有缓冲区空间
 void Buffer::RetrieveAll() {
     bzero(&buffer_[0], buffer_.size());
     readPos_ = 0;
@@ -67,8 +68,17 @@ const char *Buffer::BeginPtr_() const {
     return &*buffer_.begin();
 }
 
+//腾出空间
 void Buffer::MakeSpace_(size_t len) {
-
+    if (WritableBytes() + PrependableBytes() < len)
+        buffer_.resize(writePos_ + len + 1);
+    else{
+        size_t readable = ReadableBytes();
+        std::copy(BeginPtr_() + readPos_, BeginPtr_() + writePos_, BeginPtr_());
+        readPos_ = 0;
+        writePos_ = readPos_ + readable;
+        assert(readable == ReadableBytes());
+    }
 }
 
 char *Buffer::BeginWrite() {
@@ -94,6 +104,7 @@ void Buffer::Append(const Buffer &buff) {
     Append(buff.Peek(), buff.ReadableBytes());
 }
 
+//从文件描述符读入缓冲区
 ssize_t Buffer::ReadFd(int fd, int *saveErrno) {
     char buff[65535];
     struct iovec iov[2];
@@ -103,6 +114,8 @@ ssize_t Buffer::ReadFd(int fd, int *saveErrno) {
     iov[1].iov_base = buff;
     iov[1].iov_len = sizeof(buff);
 
+    //ssize_t readv(int fd, const struct iovec *vector, int count);
+    //将数据从文件描述符读到分散的内存块中；
     const size_t len = readv(fd, iov, 2);
     if (len < 0)
         *saveErrno = errno;
@@ -115,6 +128,7 @@ ssize_t Buffer::ReadFd(int fd, int *saveErrno) {
     return len;
 }
 
+//将缓冲区写入描述符
 ssize_t Buffer::WriteFd(int fd, int *saveErrno) {
     size_t readSize = ReadableBytes();
     ssize_t len = write(fd, Peek(), readSize);
