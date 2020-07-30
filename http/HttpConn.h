@@ -47,7 +47,7 @@ public:
 
 
     static bool isET;
-    const std::string srcDir;
+    static const char *srcDir;
     static std::atomic<int> userCount;
 
 private:
