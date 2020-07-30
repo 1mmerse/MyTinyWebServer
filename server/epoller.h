@@ -19,11 +19,11 @@ public:
 
     ~Epoller();
 
-    bool AddFd(int fd, uint32_t events);
+    bool AddFd(int fd, uint32_t events) const;
 
-    bool ModFd(int fd, uint32_t events);
+    bool ModFd(int fd, uint32_t events) const;
 
-    bool DelFd(int fd);
+    bool DelFd(int fd) const;
 
     int Wait(int timeoutMs = -1);
 
