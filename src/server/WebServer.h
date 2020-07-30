@@ -7,7 +7,12 @@
 
 #include <unordered_map>
 #include <memory>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cassert>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <functional>
 #include "../http/HttpConn.h"
 #include "../timer/Timer.h"

@@ -5,6 +5,10 @@
 #ifndef MYTINYWEBSERVER_HTTPCONN_H
 #define MYTINYWEBSERVER_HTTPCONN_H
 
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <cstdlib>
+#include <errno.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "../buffer/Buffer.h"

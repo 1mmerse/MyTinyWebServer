@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <sys/stat.h> //struct stat
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/mman.h> //mmap
 #include "../buffer/Buffer.h"
 #include "../log/Log.h"

@@ -8,6 +8,8 @@
 #include <regex>
 #include <unordered_map>
 #include <unordered_set>
+#include <string>
+#include <errno.h>
 #include <mysql/mysql.h>
 #include "../buffer/Buffer.h"
 #include "../log/Log.h"

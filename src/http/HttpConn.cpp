@@ -4,6 +4,11 @@
 
 #include "HttpConn.h"
 
+//定义静态成员！！！
+bool HttpConn::isET;
+const char *HttpConn::srcDir;
+std::atomic<int> HttpConn::userCount;
+
 HttpConn::HttpConn() {
     fd_ = -1;
     addr_ = {0};
@@ -115,7 +120,7 @@ void HttpConn::process() {
         iov_[1].iov_len = response_.Filelen();
         iovCnt_ = 2;
     }
-    LOG_DEBUG("file size:%d, %d to %d",response_.Filelen(), iovCnt_, ToWriteBytes());
+    LOG_DEBUG("file size:%d, %d to %d", response_.Filelen(), iovCnt_, ToWriteBytes());
 
 
 }
