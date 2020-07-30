@@ -76,7 +76,7 @@ void BlockDeque<T>::clear() {
 template<typename T>
 bool BlockDeque<T>::empty() {
     std::lock_guard<std::mutex> locker(mtx_);
-    deq_.empty();
+    return deq_.empty();
 }
 
 template<typename T>
@@ -147,7 +147,7 @@ bool BlockDeque<T>::pop(T &item) {
             return false;
         }
     }
-    item = deq_.front;
+    item = deq_.front();
     deq_.pop_front();
     condProducer_.notify_one();
     return true;
