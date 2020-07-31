@@ -6,7 +6,7 @@
 
 Timer::Timer() {
     /*
-     *reserver函数用来给vector预分配存储区大小，即capacity的值 ，
+     *reserve函数用来给vector预分配存储区大小，即capacity的值 ，
      *但是没有给这段内存进行初始化。reserve 的参数n是推荐预分配内存的大小，
      *实际分配的可能等于或大于这个值，即n大于capacity的值，就会reallocate内存 capacity的值会大于或者等于n 。
      *这样，当vector调用push_back函数使得size 超过原来的默认分配的capacity值时 避免了内存重分配开销。
@@ -22,7 +22,7 @@ void Timer::add(int id, int timeOut, const TimeoutCallBack &cb) {
     assert(id >= 0);
     size_t i;
     //新节点 在堆尾插入并调整
-    if (ref_.count(id) > 0) {
+    if (ref_.count(id) == 0) {
         i = heap_.size();
         ref_[id] = i;
         heap_.push_back({id, Clock::now() + MS(timeOut), cb});
@@ -55,21 +55,23 @@ void Timer::tick() {
 }
 
 void Timer::pop() {
+    assert(!heap_.empty());
     del_(0);
 }
 
 int Timer::GetNextTick() {
     tick();
     size_t res = -1;
-    if(!heap_.empty()){
+    if (!heap_.empty()) {
         res = std::chrono::duration_cast<MS>(heap_.front().expires - Clock::now()).count();
-        if(res < 0) res = 0;
+        if (res < 0) res = 0;
     }
     return res;
 }
 
 //删除指定位置元素，先将要删除元素移至尾部，然后调整堆
 void Timer::del_(size_t index) {
+    assert(heap_.empty() && index >= 0 && index < heap_.size());
     size_t i = index;
     size_t n = heap_.size() - 1;
     assert(i <= n);
@@ -104,8 +106,8 @@ void Timer::siftup_(size_t i) {
 }
 
 bool Timer::siftdown_(size_t index, size_t n) {
-    assert(index >= 0 && index < heap_.size()
-           && n >= 0 && n <= heap_.size());
+    assert(index >= 0 && index < heap_.size());
+    assert(n >= 0 && n <= heap_.size());
     size_t i = index;
     size_t j = i * 2 + 1;
     while (j < n) {
@@ -119,9 +121,9 @@ bool Timer::siftdown_(size_t index, size_t n) {
 }
 
 void Timer::SwapNode_(size_t i, size_t j) {
-    assert(i >= 0 && i < heap_.size()
-           && j >= 0 && j < heap_.size());
-    ref_[heap_[i].id] = j;
-    ref_[heap_[j].id] = i;
+    assert(i >= 0 && i < heap_.size());
+    assert(j >= 0 && j < heap_.size());
     std::swap(heap_[i], heap_[j]);
+    ref_[heap_[i].id] = i;
+    ref_[heap_[j].id] = j;
 }

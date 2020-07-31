@@ -51,7 +51,7 @@ ssize_t HttpConn::write(int *savaErrno) {
         //ssize_t writev(int fd, const struct iovec *vector, int count);
         //将多块分散的内存一并写入文件描述符中
         len = writev(fd_, iov_, iovCnt_);
-        if (len < 0) {
+        if (len <= 0) {
             *savaErrno = errno;
             break;
         }
@@ -61,7 +61,7 @@ ssize_t HttpConn::write(int *savaErrno) {
         else if (static_cast<size_t>(len) > iov_[0].iov_len) {
             iov_[1].iov_base = (uint8_t *) iov_[1].iov_base + len - iov_[0].iov_len;
             iov_[1].iov_len -= (len - iov_[0].iov_len);
-            //回收iov[0】
+            //回收iov[0]
             if (iov_[0].iov_len) {
                 sendBuff_.RetrieveAll();
                 iov_[0].iov_len = 0;

@@ -7,7 +7,7 @@
 WebServer::WebServer(int port, int trigMode, int timeoutMs, bool OptLinger, int sqlPort, const char *sqlUser,
                      const char *sqlPwd, const char *dbName, int connPoolNum, int threadNum, bool openLog, int logLevel,
                      int logQueSize) :
-        port_(port), openLinger_(openLinger_), timeoutMS_(timeoutMs), isClose_(false),
+        port_(port), openLinger_(OptLinger), timeoutMS_(timeoutMs), isClose_(false),
         timer_(new Timer()), threadPool_(new ThreadPool(threadNum)), epoller_(new Epoller()) {
     /*
      * 函数原型：char *getcwd( char *buffer, int maxlen );
@@ -20,7 +20,6 @@ WebServer::WebServer(int port, int trigMode, int timeoutMs, bool OptLinger, int 
     HttpConn::userCount = 0;
     HttpConn::srcDir = srcDir_;
     SqlConnPool::Instance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);
-
     InitEventMode_(trigMode);
     if (!InitSocket_())
         isClose_ = true;
@@ -118,7 +117,7 @@ bool WebServer::InitSocket_() {
         return false;
     }
     int on = 1;
-    ret = setsockopt(listenFd_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
+    ret = setsockopt(listenFd_, SOL_SOCKET, SO_REUSEADDR, (const void *)&on, sizeof(int));
     if (ret < 0) {
         close(listenFd_);
         LOG_ERROR("set reuseAddr error!");
@@ -180,9 +179,10 @@ void WebServer::InitEventMode_(int trigMod) {
 }
 
 void WebServer::AddClient_(int fd, struct sockaddr_in addr) {
+    assert(fd > 0);
     users_[fd].init(fd, addr);
     if (timeoutMS_ > 0)
-        timer_->add(fd, timeoutMS_, [this, client = &users_[fd]] { CloseConn_(client); });
+        timer_->add(fd, timeoutMS_, std::bind(&WebServer::CloseConn_, this, &users_[fd]));
     epoller_->AddFd(fd, EPOLLIN | connEvent_);
     SetFdNonblock(fd);
     LOG_INFO("Client[%d] in!", users_[fd].GetFd());
@@ -205,34 +205,40 @@ void WebServer::DealListen_() {
 }
 
 void WebServer::DealWrite_(HttpConn *client) {
+    assert(client);
     //活动连接，调整定时器堆上位置
     ExtentTime_(client);
     threadPool_->AddTask([this, client] { OnWrite_(client); });
 }
 
 void WebServer::DealRead_(HttpConn *client) {
+    assert(client);
     ExtentTime_(client);
     threadPool_->AddTask([this, client] { OnRead_(client); });
 }
 
 void WebServer::SendError_(int fd, const char *info) {
+    assert(fd > 0);
     int ret = send(fd, info, strlen(info), 0);
     if (ret < 0)
         LOG_WARN("send error to client[%d] error!", fd);
 }
 
 void WebServer::ExtentTime_(HttpConn *client) {
+    assert(client);
     if (timeoutMS_ > 0)
         timer_->adjust(client->GetFd(), timeoutMS_);
 }
 
 void WebServer::CloseConn_(HttpConn *client) {
+    assert(client);
     LOG_INFO("client[%d] quit!", client->GetFd());
     epoller_->DelFd(client->GetFd());
     client->Close();
 }
 
 void WebServer::OnRead_(HttpConn *client) {
+    assert(client);
     int ret = -1;
     int readErrno = 0;
     ret = client->read(&readErrno);
@@ -246,6 +252,7 @@ void WebServer::OnRead_(HttpConn *client) {
 }
 
 void WebServer::OnWrite_(HttpConn *client) {
+    assert(client);
     int ret = -1;
     int writeErrno = 0;
     ret = client->write(&writeErrno);
@@ -267,5 +274,6 @@ void WebServer::OnWrite_(HttpConn *client) {
 }
 
 int WebServer::SetFdNonblock(int fd) {
+    assert(fd > 0);
     return fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 }

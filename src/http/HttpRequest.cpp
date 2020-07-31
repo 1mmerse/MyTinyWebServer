@@ -90,7 +90,7 @@ bool HttpRequest::IsKeepAlive() const {
 }
 
 bool HttpRequest::ParseRequestLine_(const std::string &line) {
-    std::regex patten("^([^]*)([^]*) HTTP/([^]*)$");
+    std::regex patten("^([^ ]*) ([^ ]*) HTTP/([^ ]*)$");
     std::smatch subMatch;
     if (regex_match(line, subMatch, patten)) {
         method_ = subMatch[1];
@@ -104,10 +104,12 @@ bool HttpRequest::ParseRequestLine_(const std::string &line) {
 }
 
 void HttpRequest::ParseHeader_(const std::string &line) {
-    std::regex patten("^([^:]*):?(.*)$");
+    std::regex patten("^([^:]*): ?(.*)$");
     std::smatch subMatch;
     if (std::regex_match(line, subMatch, patten)) {
         header_[subMatch[1]] = subMatch[2];
+    } else{
+        state_ = BODY;
     }
 }
 
@@ -179,6 +181,11 @@ void HttpRequest::ParseFromUrlEncode_() {
             default:
                 break;
         }
+    }
+    assert(j <= i);
+    if (post_.count(key) == 0 && i < j) {
+        value = body_.substr(j, i - j);
+        post_[key] = value;
     }
 }
 

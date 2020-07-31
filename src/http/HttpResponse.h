@@ -29,7 +29,7 @@ public:
 
     size_t Filelen() const;
 
-    void ErrorContent(Buffer &buff, std::string message);
+    void ErrorContent(Buffer &buff, const std::string &message) const;
 
     int Code() const;
 

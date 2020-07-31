@@ -84,8 +84,8 @@ void HttpResponse::MakeResponse(Buffer &buff) {
 }
 
 void HttpResponse::UnmapFile() {
-    if (mmFile_){
-        munmap(mmFile_,mmFileStat_.st_size);
+    if (mmFile_) {
+        munmap(mmFile_, mmFileStat_.st_size);
         mmFile_ = nullptr;
     }
 }
@@ -98,7 +98,7 @@ size_t HttpResponse::Filelen() const {
     return mmFileStat_.st_size;
 }
 
-void HttpResponse::ErrorContent(Buffer &buff, std::string message){
+void HttpResponse::ErrorContent(Buffer &buff, const std::string &message) const {
     std::string body;
     std::string status;
 

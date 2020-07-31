@@ -15,7 +15,7 @@
 
 class Buffer {
 public:
-    explicit Buffer(size_t initBufferSize = 1024);
+    Buffer(int initBufferSize = 1024);
 
     ~Buffer() = default;
 

@@ -10,6 +10,7 @@
 #include <chrono>
 #include <queue>
 #include <vector>
+#include <algorithm>
 #include <assert.h>
 
 typedef std::function<void()> TimeoutCallBack;
